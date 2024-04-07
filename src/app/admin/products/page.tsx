@@ -1,7 +1,11 @@
-import React from "react";
-import PageHeader from "../_components/PageHeader";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Table,
     TableBody,
@@ -11,12 +15,14 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import db from "@/db/db";
-import { CheckCircle2, MoreVertical, XCircle } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
+import { CheckCircle2, MoreVertical, XCircle } from "lucide-react";
+import Link from "next/link";
+import PageHeader from "../_components/PageHeader";
 import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+    ActiveToggleDropdownItem,
+    DeleteDropdownItem,
+} from "./_components/ProductActions";
 
 const AdminProductPage = () => {
     return (
@@ -41,7 +47,7 @@ const ProductsTable = async () => {
             isAvailableForPurchase: true,
             _count: { select: { orders: true } },
         },
-        orderBy: { name: "asc" },
+        orderBy: { name: "desc" },
     });
 
     if (products.length === 0) return <p>No products found</p>;
@@ -72,7 +78,7 @@ const ProductsTable = async () => {
                             ) : (
                                 <>
                                     <span className="sr-only">unavailable</span>
-                                    <XCircle />
+                                    <XCircle className="stroke-destructive" />
                                 </>
                             )}
                         </TableCell>
@@ -89,6 +95,34 @@ const ProductsTable = async () => {
                                     <MoreVertical />
                                     <span className="sr-only">Actions</span>
                                 </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem asChild>
+                                        <a
+                                            download
+                                            href={`/admin/products/${item.id}/download`}
+                                        >
+                                            Download
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            href={`/admin/products/${item.id}/edit`}
+                                        >
+                                            Edit
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <ActiveToggleDropdownItem
+                                        id={item.id}
+                                        isAvailableForPurchase={
+                                            item.isAvailableForPurchase
+                                        }
+                                    />
+                                    <DeleteDropdownItem
+                                        id={item.id}
+                                        disabled={item._count.orders > 0}
+                                    />
+                                </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
                     </TableRow>

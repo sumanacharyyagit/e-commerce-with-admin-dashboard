@@ -2,7 +2,7 @@ import React from "react";
 import PageHeader from "../../_components/PageHeader";
 import ProductForm from "../_components/ProductForm";
 
-const AdminNewProductage = () => {
+const AdminNewProductPage = () => {
     return (
         <>
             <PageHeader>Add Product</PageHeader>
@@ -11,4 +11,4 @@ const AdminNewProductage = () => {
     );
 };
 
-export default AdminNewProductage;
+export default AdminNewProductPage;
