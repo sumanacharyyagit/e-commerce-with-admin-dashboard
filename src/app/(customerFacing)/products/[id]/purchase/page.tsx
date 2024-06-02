@@ -15,6 +15,7 @@ const PurchasePage = async ({ params: { id } }: { params: { id: string } }) => {
         metadata: {
             productId: product.id,
         },
+        description: "Test Payments for ECommerceWebApp",
     });
 
     if (!paymentIntent.client_secret)

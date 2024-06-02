@@ -1,4 +1,5 @@
 "use client";
+import { userOrderExists } from "@/app/actions/order";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -11,6 +12,7 @@ import {
 import { formatCurrency } from "@/lib/formatters";
 import {
     Elements,
+    LinkAuthenticationElement,
     PaymentElement,
     useElements,
     useStripe,
@@ -21,6 +23,7 @@ import React, { FormEvent, useState } from "react";
 
 type TCheckoutFormProps = {
     product: {
+        id: string;
         imagePath: string;
         name: string;
         priceInCents: number;
@@ -57,25 +60,46 @@ const CheckoutForm = ({ product, clientSecret }: TCheckoutFormProps) => {
                     </div>
                 </div>
                 <Elements options={{ clientSecret }} stripe={stripePromise}>
-                    <Form priceInCents={product.priceInCents} />
+                    <Form
+                        priceInCents={product.priceInCents}
+                        productId={product.id}
+                    />
                 </Elements>
             </div>
         </>
     );
 };
 
-const Form = ({ priceInCents }: { priceInCents: number }) => {
+const Form = ({
+    priceInCents,
+    productId,
+}: {
+    priceInCents: number;
+    productId: string;
+}) => {
     const stripe = useStripe();
     const elements = useElements();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        if (!stripe || !elements || !email) return;
         setIsLoading(true);
-        if (!stripe || !elements) return;
 
         // check for existing order
+        const orderExists = await userOrderExists(email, productId);
+
+        if (!orderExists) {
+            setErrorMessage(
+                "This product already purchased, try to download from My Orders Page"
+            );
+            setIsLoading(false);
+            return;
+        }
+        console.log("HERE");
+
         stripe
             .confirmPayment({
                 elements,
@@ -83,9 +107,24 @@ const Form = ({ priceInCents }: { priceInCents: number }) => {
                     return_url: `${
                         process.env.NEXT_PUBLIC_SERVER_URL as string
                     }/stripe/purchase-success`,
+                    payment_method_data: {
+                        billing_details: {
+                            name: "Test Data",
+                            email: "testdata@email.co",
+                            address: {
+                                line1: "123 Main St", // Add the customer's address details here
+                                city: "City",
+                                postal_code: "123456",
+                                state: "State",
+                                country: "IN", // Ensure the country is set to India
+                            },
+                        },
+                    },
                 },
             })
             .then(({ error }) => {
+                console.log(error, "error");
+
                 if (
                     error.type === "card_error" ||
                     error.type === "validation_error"
@@ -109,6 +148,11 @@ const Form = ({ priceInCents }: { priceInCents: number }) => {
                 </CardHeader>
                 <CardContent>
                     <PaymentElement />
+                    <div className="mt-4">
+                        <LinkAuthenticationElement
+                            onChange={(e) => setEmail(e.value.email)}
+                        />
+                    </div>
                     <CardFooter>
                         <Button
                             className="mt-7 w-full"
