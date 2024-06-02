@@ -1,9 +1,3 @@
-// C:\Program Files (x86)\stripe_1.19.5_windows_x86_64>stripe login
-// Your pairing code is: proud-favour-smart-glow
-// This pairing code verifies your authentication with Stripe.
-// Press Enter to open the browser or visit https://dashboard.stripe.com/stripecli/confirm_auth?t=enQgPE0PpMwYqRSBOPybUqIYij9fg7HN (^C to quit)^C
-// C:\Program Files (x86)\stripe_1.19.5_windows_x86_64>
-
 import db from "@/db/db";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
